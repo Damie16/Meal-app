@@ -5,6 +5,7 @@ import { HomeScreen } from './screens/HomeScreen';
 import { AddItemScreen } from './screens/AddItemScreen';
 import { FilterScreen } from './screens/FilterScreen';
 import { ManagementScreen } from './screens/ManagementScreen';
+import { generateUniqueId } from './utils/MenuUtils';
 
 
 const initialMenuItems: MenuItem[] = [
@@ -32,6 +33,7 @@ const initialMenuItems: MenuItem[] = [
 ];
 
 const App: React.FC = () => {
+  
   const [currentScreen, setCurrentScreen] = useState<Screen>('Home');
   const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
   const [filterCourse, setFilterCourse] = useState<string | null>(null);
@@ -41,6 +43,7 @@ const App: React.FC = () => {
     setCurrentScreen(screen);
   };
 
+  
   const navigateToHome = () => {
     setCurrentScreen('Home');
     setFilterCourse(null);
@@ -50,9 +53,10 @@ const App: React.FC = () => {
   const handleSaveItem = (item: Omit<MenuItem, 'id'>) => {
     const newItem: MenuItem = {
       ...item,
-      id: Date.now().toString(),
+      id: generateUniqueId(),
     };
 
+    
     setMenuItems([...menuItems, newItem]);
     Alert.alert('Success', 'Menu item added successfully!');
     navigateToHome();
@@ -67,8 +71,10 @@ const App: React.FC = () => {
     );
   };
 
+  
   const handleRemoveSelected = () => {
     const selectedItems = menuItems.filter(item => item.selected);
+    
     if (selectedItems.length === 0) {
       Alert.alert('Error', 'No items selected');
       return;
@@ -83,6 +89,7 @@ const App: React.FC = () => {
           text: 'Remove',
           style: 'destructive',
           onPress: () => {
+            
             setMenuItems(menuItems.filter(item => !item.selected));
             Alert.alert('Success', 'Items removed successfully!');
           },

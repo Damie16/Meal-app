@@ -1,141 +1,127 @@
 import React, { useState } from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import { MenuItem } from '../types/MenuItem';
+import { View, Text, TextInput, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { MenuItem, Course } from '../types/MenuItem';
 import { ScreenHeader } from '../components/ScreenHeader';
+import { CustomButton } from '../components/CustomButton';
 
 interface AddItemScreenProps {
   onSave: (item: Omit<MenuItem, 'id'>) => void;
   onCancel: () => void;
 }
 
-export const AddItemScreen: React.FC<AddItemScreenProps> = ({ 
-  onSave, 
-  onCancel 
-}) => {
+export const AddItemScreen: React.FC<AddItemScreenProps> = ({ onSave, onCancel }) => {
   const [dishName, setDishName] = useState('');
   const [description, setDescription] = useState('');
-  const [course, setCourse] = useState<'Starter' | 'Main' | 'Dessert'>('Starter');
+  const [course, setCourse] = useState<Course>('Starter');
   const [price, setPrice] = useState('');
 
   const handleSave = () => {
-    if (!dishName || !description || !price) {
+    
+    if (!dishName.trim() || !description.trim() || !price) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
+    const priceNum = parseFloat(price);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      Alert.alert('Error', 'Please enter a valid price');
+      return;
+    }
+
+    
     onSave({
-      dishName,
-      description,
+      dishName: dishName.trim(),
+      description: description.trim(),
       course,
-      price: parseFloat(price),
+      price: priceNum,
     });
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScreenHeader title="Add New Menu Item" onBack={onCancel} />
-      <ScrollView style={styles.formContainer}>
-        <View style={styles.formGroup}>
+    <View style={styles.container}>
+      <ScreenHeader title="Add Menu Item" onBack={onCancel} />
+      
+      <ScrollView style={styles.content}>
+        <View style={styles.form}>
           <Text style={styles.label}>Dish Name</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter dish name"
             value={dishName}
             onChangeText={setDishName}
+            placeholder="Enter dish name"
+            placeholderTextColor="#999"
           />
-        </View>
 
-        <View style={styles.formGroup}>
           <Text style={styles.label}>Description</Text>
           <TextInput
             style={[styles.input, styles.textArea]}
-            placeholder="Enter description"
             value={description}
             onChangeText={setDescription}
+            placeholder="Enter description"
+            placeholderTextColor="#999"
             multiline
             numberOfLines={3}
           />
-        </View>
 
-        <View style={styles.formGroup}>
           <Text style={styles.label}>Course</Text>
           <View style={styles.courseButtons}>
-            {(['Starter', 'Main', 'Dessert'] as const).map(c => (
+            {(['Starter', 'Main', 'Dessert'] as Course[]).map(c => (
               <TouchableOpacity
                 key={c}
-                style={[
-                  styles.courseButton,
-                  course === c && styles.courseButtonActive,
-                ]}
+                style={[styles.courseButton, course === c && styles.courseButtonSelected]}
                 onPress={() => setCourse(c)}>
-                <Text
-                  style={[
-                    styles.courseButtonText,
-                    course === c && styles.courseButtonTextActive,
-                  ]}>
+                <Text style={[styles.courseButtonText, course === c && styles.courseButtonTextSelected]}>
                   {c}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
-        </View>
 
-        <View style={styles.formGroup}>
           <Text style={styles.label}>Price (R)</Text>
           <TextInput
             style={styles.input}
-            placeholder="0.00"
             value={price}
             onChangeText={setPrice}
+            placeholder="0.00"
+            placeholderTextColor="#999"
             keyboardType="decimal-pad"
           />
         </View>
-
-        <View style={styles.formActions}>
-          <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Save Item</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
-    </SafeAreaView>
+
+      <View style={styles.footer}>
+        <CustomButton title="Cancel" onPress={onCancel} variant="secondary" />
+        <View style={styles.buttonSpacer} />
+        <CustomButton title="Save Item" onPress={handleSave} />
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f5f5f5',
   },
-  formContainer: {
+  content: {
+    flex: 1,
+  },
+  form: {
     padding: 15,
-  },
-  formGroup: {
-    marginBottom: 20,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
     color: '#2c3e50',
     marginBottom: 8,
+    marginTop: 15,
   },
   input: {
     backgroundColor: '#ffffff',
+    padding: 12,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    borderRadius: 8,
-    padding: 12,
     fontSize: 16,
     color: '#2c3e50',
   },
@@ -155,45 +141,24 @@ const styles = StyleSheet.create({
     borderColor: '#667eea',
     alignItems: 'center',
   },
-  courseButtonActive: {
+  courseButtonSelected: {
     backgroundColor: '#667eea',
   },
   courseButtonText: {
-    fontSize: 16,
     color: '#667eea',
     fontWeight: '600',
   },
-  courseButtonTextActive: {
+  courseButtonTextSelected: {
     color: '#ffffff',
   },
-  formActions: {
+  footer: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 20,
-  },
-  cancelButton: {
-    flex: 1,
     padding: 15,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#e74c3c',
-    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
   },
-  cancelButtonText: {
-    color: '#e74c3c',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  saveButton: {
-    flex: 1,
-    backgroundColor: '#667eea',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
+  buttonSpacer: {
+    width: 10,
   },
 });
